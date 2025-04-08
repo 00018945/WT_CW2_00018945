@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= title %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container py-4">
+
+  <h1 class="mb-4"><%= title %></h1>
+
+  <!-- Filter Form -->
+  <form method="GET" class="mb-4 d-flex align-items-end gap-2">
+    <div>
+      <label for="status" class="form-label">Filter by status:</label>
+      <select name="status" id="status" class="form-select">
+        <option <%= selectedStatus === "All" ? "selected" : "" %>>All</option>
+        <option <%= selectedStatus === "Pending" ? "selected" : "" %>>Pending</option>
+        <option <%= selectedStatus === "In Progress" ? "selected" : "" %>>In Progress</option>
+        <option <%= selectedStatus === "Completed" ? "selected" : "" %>>Completed</option>
+      </select>
+    </div>
+    <button class="btn btn-outline-primary">Apply</button>
+    <a href="/goals" class="btn btn-outline-secondary">Reset</a>
+    <a href="/goals/add" class="btn btn-success ms-auto"> Add New Goal</a>
+  </form>
+
+  <!-- Progress Stats -->
+  <div class="mb-4">
+    <span class="badge bg-dark">Total: <%= stats.all %></span>
+    <span class="badge bg-success"> Completed: <%= stats.completed %></span>
+    <span class="badge bg-warning text-dark"> In Progress: <%= stats.inProgress %></span>
+    <span class="badge bg-info text-dark"> Pending: <%= stats.pending %></span>
+  </div>
+
+  <% if (goals.length === 0) { %>
+    <div class="alert alert-info">No goals found for this filter.</div>
+  <% } else { %>
+    <div class="row row-cols-1 row-cols-md-2 g-3">
+      <% goals.forEach(goal => { %>
+        <div class="col">
+          <div class="card h-100 <%= goal.targetDate.toISOString().split('T')[0] < today ? 'border-danger' : '' %>">
+            <div class="card-body">
+              <h5 class="card-title"><%= goal.title %></h5>
+              <p class="card-text"><%= goal.description %></p>
+              <p class="text-muted">Target: <%= goal.targetDate.toDateString() %></p>
+
+              <% if (goal.targetDate.toISOString().split('T')[0] < today && goal.status !== "Completed") { %>
+                <span class="badge bg-danger"> Overdue</span>
+              <% } %>
+
+              <span class="badge bg-secondary"><%= goal.status %></span>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+              <a href="/goals/edit/<%= goal._id %>" class="btn btn-warning btn-sm"> Edit</a>
+
+              <% if (goal.status !== "Completed") { %>
+                <form action="/goals/complete/<%= goal._id %>" method="POST" style="display:inline;">
+                  <button class="btn btn-success btn-sm"> Complete</button>
+                </form>
+              <% } %>
+
+              <form action="/goals/delete/<%= goal._id %>" method="POST" style="display:inline;">
+                <button class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')"> Delete</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <a href="/" class="btn btn-link mt-4">⬅ Back to Home</a>
+
+</body>
+</html>
